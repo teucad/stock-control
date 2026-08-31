@@ -7,6 +7,47 @@ from tkinter import ttk, messagebox
 import veritabani as db
 
 
+# Bazı Windows/Tcl-Tk kurulumlarında Türkçe klavyeden ş/ı/ğ (ve büyük
+# harfleri) yazılınca, bu harfler Türkçe (Latin-5) kod sayfasındaki bayt
+# değerleriyle aynı konumu paylaşan Latin-1 karakterlerine ("þ", "ý", "ð"
+# ve büyükleri) dönüşerek giriliyor (ü, ö, ç iki kod sayfasında da aynı
+# bayta denk geldiği için etkilenmiyor). Karakter widget'a girdikten HEMEN
+# SONRA (<KeyRelease>) son eklenen karaktere bakıp bozuksa doğrusuyla
+# değiştiriyoruz; bu, Tk'nin iç tuş işleme sırasına bağımlı olmadığı için
+# önceden (KeyPress sırasında) engellemeye çalışmaktan daha güvenilir.
+_TR_BOZUK_KARAKTER_DUZELT = {
+    "þ": "ş", "Þ": "Ş",
+    "ý": "ı", "Ý": "İ",
+    "ð": "ğ", "Ð": "Ğ",
+}
+
+
+def turkce_klavye_duzelt(widget):
+    """Entry/Text widget'ına, yukarıda listelenen bozuk karakterleri son
+    yazılan karakter olarak tespit edip doğru Türkçe karakterle değiştiren
+    bir <KeyRelease> yakalayıcısı bağlar."""
+
+    def _duzelt(event):
+        try:
+            if isinstance(widget, tk.Text):
+                onceki = widget.get("insert-1c", "insert")
+                if onceki in _TR_BOZUK_KARAKTER_DUZELT:
+                    widget.delete("insert-1c", "insert")
+                    widget.insert("insert", _TR_BOZUK_KARAKTER_DUZELT[onceki])
+            else:
+                pos = int(widget.index("insert"))
+                if pos > 0:
+                    onceki = widget.get()[pos - 1:pos]
+                    if onceki in _TR_BOZUK_KARAKTER_DUZELT:
+                        widget.delete(pos - 1, pos)
+                        widget.insert(pos - 1, _TR_BOZUK_KARAKTER_DUZELT[onceki])
+        except tk.TclError:
+            pass
+
+    widget.bind("<KeyRelease>", _duzelt, add="+")
+    return widget
+
+
 def hata(mesaj):
     messagebox.showerror("Hata", mesaj)
 
@@ -78,6 +119,7 @@ def form_satiri(parent, satir, etiket, salt_okunur=False, genislik=30):
     if salt_okunur:
         girdi.configure(state="readonly")
     girdi.grid(row=satir, column=1, sticky="w", pady=4)
+    turkce_klavye_duzelt(girdi)
     return girdi
 
 

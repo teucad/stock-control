@@ -5,7 +5,9 @@ import tkinter as tk
 from tkinter import ttk
 
 import veritabani as db
-from arayuz.ortak import Sayfa, tablo_olustur, form_satiri, entry_ayarla, hata, bilgi
+from arayuz.ortak import (
+    Sayfa, tablo_olustur, form_satiri, entry_ayarla, hata, bilgi, turkce_klavye_duzelt,
+)
 from arayuz.uye import _AramaKarti, UYE_SUTUNLARI
 from arayuz.stok import STOK_SUTUNLARI
 
@@ -76,9 +78,10 @@ class EmanetVer(Sayfa):
         arama.pack(fill="x", pady=(0, 6))
         ttk.Label(arama, text="Stok Adı:").pack(side="left")
         self.e_urun_arama = ttk.Entry(arama, width=25)
+        turkce_klavye_duzelt(self.e_urun_arama)
         self.e_urun_arama.pack(side="left", padx=8)
         self.e_urun_arama.bind("<Return>", lambda ev: self._urun_ara())
-        self.e_urun_arama.bind("<KeyRelease>", lambda ev: self._urun_ara())
+        self.e_urun_arama.bind("<KeyRelease>", lambda ev: self._urun_ara(), add="+")
 
         self.urun_tv, urun_tv_cerceve = tablo_olustur(urun_blok, STOK_SUTUNLARI, yukseklik=5)
         urun_tv_cerceve.pack(fill="both", expand=True)

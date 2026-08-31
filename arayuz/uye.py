@@ -5,7 +5,9 @@ import tkinter as tk
 from tkinter import ttk
 
 import veritabani as db
-from arayuz.ortak import Sayfa, tablo_olustur, form_satiri, entry_ayarla, hata, bilgi, onay
+from arayuz.ortak import (
+    Sayfa, tablo_olustur, form_satiri, entry_ayarla, hata, bilgi, onay, turkce_klavye_duzelt,
+)
 
 
 UYE_SUTUNLARI = [
@@ -39,6 +41,7 @@ class UyeKayit(Sayfa):
         ttk.Label(form, text="Adres:").grid(row=3, column=0, sticky="ne", padx=(0, 8), pady=4)
         self.t_adres = tk.Text(form, width=30, height=4)
         self.t_adres.grid(row=3, column=1, sticky="w", pady=4)
+        turkce_klavye_duzelt(self.t_adres)
 
         ttk.Button(self.icerik, text="Kaydet", command=self._kaydet).pack(
             anchor="w", pady=10
@@ -90,8 +93,9 @@ class _AramaKarti(ttk.Frame):
 
         self.e_arama = ttk.Entry(self, width=25)
         self.e_arama.pack(side="left", padx=8)
+        turkce_klavye_duzelt(self.e_arama)
         self.e_arama.bind("<Return>", lambda ev: ara_callback())
-        self.e_arama.bind("<KeyRelease>", lambda ev: ara_callback())
+        self.e_arama.bind("<KeyRelease>", lambda ev: ara_callback(), add="+")
 
     def deger(self):
         return self.kriter.get(), self.e_arama.get()
@@ -119,6 +123,7 @@ class UyeAraDuzelt(Sayfa):
         ttk.Label(duzelt, text="Adres:").grid(row=4, column=0, sticky="ne", padx=(0, 8), pady=4)
         self.t_adres = tk.Text(duzelt, width=30, height=3)
         self.t_adres.grid(row=4, column=1, sticky="w", pady=4)
+        turkce_klavye_duzelt(self.t_adres)
 
         ttk.Button(duzelt, text="Güncelle", command=self._guncelle).grid(
             row=5, column=1, sticky="w", pady=8

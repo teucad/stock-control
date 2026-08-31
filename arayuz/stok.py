@@ -5,7 +5,9 @@ import tkinter as tk
 from tkinter import ttk
 
 import veritabani as db
-from arayuz.ortak import Sayfa, tablo_olustur, form_satiri, hata, bilgi, onay
+from arayuz.ortak import (
+    Sayfa, tablo_olustur, form_satiri, hata, bilgi, onay, turkce_klavye_duzelt,
+)
 
 
 STOK_SUTUNLARI = [
@@ -77,9 +79,10 @@ class StokAraDuzelt(Sayfa):
         arama.pack(fill="x", pady=(0, 10))
         ttk.Label(arama, text="Stok Adı:").pack(side="left")
         self.e_arama = ttk.Entry(arama, width=30)
+        turkce_klavye_duzelt(self.e_arama)
         self.e_arama.pack(side="left", padx=8)
         self.e_arama.bind("<Return>", lambda ev: self._ara())
-        self.e_arama.bind("<KeyRelease>", lambda ev: self._ara())
+        self.e_arama.bind("<KeyRelease>", lambda ev: self._ara(), add="+")
 
         self.tv, tv_cerceve = tablo_olustur(self.icerik, STOK_SUTUNLARI, yukseklik=10)
         tv_cerceve.pack(fill="both", expand=True, pady=(0, 10))
@@ -154,9 +157,10 @@ class StokSil(Sayfa):
         arama.pack(fill="x", pady=(0, 10))
         ttk.Label(arama, text="Stok Adı:").pack(side="left")
         self.e_arama = ttk.Entry(arama, width=30)
+        turkce_klavye_duzelt(self.e_arama)
         self.e_arama.pack(side="left", padx=8)
         self.e_arama.bind("<Return>", lambda ev: self._ara())
-        self.e_arama.bind("<KeyRelease>", lambda ev: self._ara())
+        self.e_arama.bind("<KeyRelease>", lambda ev: self._ara(), add="+")
 
         self.tv, tv_cerceve = tablo_olustur(self.icerik, STOK_SUTUNLARI, yukseklik=14)
         tv_cerceve.pack(fill="both", expand=True, pady=(0, 10))
