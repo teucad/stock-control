@@ -37,7 +37,7 @@ Python kurulu değilse [python.org](https://www.python.org/downloads/) adresinde
 
 ~~Proje klasöründeyken:~~
 
-```/dist``` klasöründe önceden build edilmiş, tek açılışta çalıştırılabilir ``StokTakipSistemi.exe`` dosyası mevcuttur. Dosyayı ilk açtığınızda dosyanın bulunduğu dizinde bir ``stok.db`` dosyası oluşacaktır. Bu dosya, stok veritabanını bulunduran dosyadır.
+```/dist``` klasöründe ve RELEASES sayfasında önceden build edilmiş, tek açılışta çalıştırılabilir ``StokTakipSistemi.exe`` dosyası mevcuttur. Dosyayı ilk açtığınızda dosyanın bulunduğu dizinde bir ``stok.db`` dosyası oluşacaktır. Bu dosya, stok veritabanını bulunduran dosyadır.
 
 
 > `stok.db` dosyasını silmek tüm stok, üye ve emanet kayıtlarını kalıcı olarak siler — yedeksiz silmeyin.
