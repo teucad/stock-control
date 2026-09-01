@@ -30,17 +30,14 @@ Python kurulu değilse [python.org](https://www.python.org/downloads/) adresinde
 
 ~~(Depoyu zaten klonladıysanız veya dosyaları elle kopyaladıysanız bu adımı atlayabilirsiniz.)~~
 
-```/dist``` klasöründe önceden build edilmiş, tek açılışta çalıştırılabilir ``StokTakipSistemi.exe`` dosyası mevcuttur. Dosyayı ilk açtığınızda dosyanın bulunduğu dizinde bir ``stok.db`` dosyası oluşacaktır. Bu dosya, stok veritabanını bulunduran dosyadır ve veritabanının silinmemesi veya bozulmaması için asla dokunulmamalıdır.
+``StokTakipSistemi.exe`` dosyasını indirip çalıştırabilirsiniz.
 
 ## Çalıştırma
 
-Proje klasöründeyken:
+~~Proje klasöründeyken:~~
 
-```powershell
-python main.py
-```
+```/dist``` klasöründe önceden build edilmiş, tek açılışta çalıştırılabilir ``StokTakipSistemi.exe`` dosyası mevcuttur. Dosyayı ilk açtığınızda dosyanın bulunduğu dizinde bir ``stok.db`` dosyası oluşacaktır. Bu dosya, stok veritabanını bulunduran dosyadır.
 
-İlk çalıştırmada aynı klasörde `stok.db` adlı boş bir veritabanı dosyası otomatik olarak oluşturulur. Uygulamayı her kapatıp açtığınızda veriler bu dosyada saklı kalmaya devam eder.
 
 > `stok.db` dosyasını silmek tüm stok, üye ve emanet kayıtlarını kalıcı olarak siler — yedeksiz silmeyin.
 
