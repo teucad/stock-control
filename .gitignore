@@ -3,7 +3,3 @@ __pycache*
 stok.db
 
 build/
-
-*.spec
-
-*.ico

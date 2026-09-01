@@ -5,8 +5,9 @@ Küçük ölçekli bir depo/atölye için geliştirilmiş, masaüstünde çalı�
 ## Özellikler
 
 - **Stok yönetimi:** Ürün girişi, isimle arama/düzeltme, silme (üzerinde açık emanet varsa silme engellenir).
+- **Pert (bozuk/arızalı) takibi:** Bir üründen kaç adedin bozuk olduğu ayrıca tutulur. Pert adedi toplam stok adedinin içinden sayılır — ürün rafta durmaya devam eder, ama pert adetler müsait sayılmaz ve emanet verilemez.
 - **Üye yönetimi:** Üye kaydı, ad/TC/telefon ile arama-düzeltme, silme (açık emaneti varsa silme engellenir).
-- **Emanet takibi:** Bir üyeye malzeme emanet verme ve (kısmi veya tam) teslim alma. Emanet verilen adet, stok adedinden düşülmez; ekranda `Toplam / Emanette / Müsait` olarak ayrı gösterilir.
+- **Emanet takibi:** Bir üyeye malzeme emanet verme ve (kısmi veya tam) teslim alma. Emanet verilen adet, stok adedinden düşülmez; ekranda `Toplam / Emanette / Pert / Müsait` olarak ayrı gösterilir.
 - **Canlı arama:** Tüm arama kutuları yazarken listeyi anında günceller.
 - **Türkçe karakter desteği:** Bazı Windows/Tcl-Tk kurulumlarında görülen ş/ı/ğ klavye giriş sorununa karşı otomatik düzeltme içerir.
 - Tüm veriler yerelde, çalışma klasöründeki `stok.db` adlı SQLite dosyasında saklanır.
@@ -49,11 +50,11 @@ Uygulama açıldığında üç bölmeli bir ana menü karşılar: sol üstte **S
 
 | Ekran | Ne yapar |
 |---|---|
-| **Stok Giriş** | Raf No, Stok Adı ve Stok Adedi girilerek yeni bir stok kaydı açılır. Sıra No otomatik verilir, giriş tarihi (saatiyle birlikte) otomatik kaydedilir. Aynı isimde stok zaten varsa (büyük/küçük harf ve Türkçe karakter farkı gözetilmeden) kayıt reddedilir. |
-| **Stok Ara / Düzelt** | Stok adına göre arama yapılır (yazarken liste anında güncellenir). Listeden bir satır seçilince Raf No, Stok Adı ve Stok Adedi düzenlenebilir. Emanette olan adedin altına düşürülemez. |
+| **Stok Giriş** | Raf No, Stok Adı, Stok Adedi ve (varsa) Pert Adedi girilerek yeni bir stok kaydı açılır. Pert adedi stok adedinden fazla olamaz. Sıra No otomatik verilir, giriş tarihi (saatiyle birlikte) otomatik kaydedilir. Aynı isimde stok zaten varsa (büyük/küçük harf ve Türkçe karakter farkı gözetilmeden) kayıt reddedilir. |
+| **Stok Ara / Düzelt** | Stok adına göre arama yapılır (yazarken liste anında güncellenir). Listeden bir satır seçilince Raf No, Stok Adı, Stok Adedi ve Pert Adedi düzenlenebilir. Stok adedi, emanetteki ve pert adetlerin toplamının altına düşürülemez. |
 | **Stok Sil** | Arama ile bulunan bir stok seçilip silinir. Üzerinde açık (teslim alınmamış) emanet varsa silme işlemi engellenir. |
 
-Arama sonuç tablosunda her ürün için `Toplam`, `Emanette` ve `Müsait` adetler ayrı sütunlarda gösterilir.
+Arama sonuç tablosunda her ürün için `Toplam`, `Emanette`, `Pert` ve `Müsait` adetler ayrı sütunlarda gösterilir — `Müsait = Toplam − Emanette − Pert`.
 
 ### Üye
 
@@ -67,7 +68,7 @@ Arama sonuç tablosunda her ürün için `Toplam`, `Emanette` ve `Müsait` adetl
 
 | Ekran | Ne yapar |
 |---|---|
-| **Emanet Ver** | Önce bir üye, ardından bir malzeme seçilir; seçilen malzemenin adı ve müsait adedi ekranda görünür. Verilecek adet girilip onaylanır. Müsait adetten fazlası verilemez. Üyenin mevcut açık emanetleri ekranın altında listelenir. |
+| **Emanet Ver** | Önce bir üye, ardından bir malzeme seçilir; seçilen malzemenin adı ve müsait adedi ekranda görünür. Verilecek adet girilip onaylanır. Müsait adetten fazlası verilemez; pert (bozuk) adetler müsait sayılmadığı için emanet verilemez. Üyenin mevcut açık emanetleri ekranın altında listelenir. |
 | **Emanet Teslim Al** | Önce bir üye seçilir; üyenin açık emanetleri listelenir. Bir kayıt seçilince teslim alınacak adet, kalan miktarla otomatik doldurulur — kısmen veya tamamen teslim alınabilir. Üyenin teslim alınacak emaneti yoksa bilgilendirme mesajı gösterilir. |
 
 ## Proje Yapısı

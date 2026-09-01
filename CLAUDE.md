@@ -48,16 +48,20 @@ Three-layer split, strictly enforced:
 
 - `urun` (product/stock item): `sira_no` PK, `raf_no` (shelf), `stok_adi` (name, must be unique
   case/Turkish-insensitively — enforced in Python via `_stok_adi_cakisiyor`, not a SQL constraint),
-  `stok_adedi` (total quantity), `giris_tarihi`.
+  `stok_adedi` (total quantity), `pert_adedi` (how many of those units are broken/defective, defaults 0),
+  `giris_tarihi`. `pert_adedi` is a *subset* of `stok_adedi` — the item is physically on the shelf but
+  unusable — so pert units are never lendable.
 - `uye` (member): `uye_no` PK, `uye_adi`, `tc` (11-digit Turkish ID, unique), `telefon` (10-digit), `adres`.
 - `emanet` (loan/custody record): `emanet_no` PK, FKs to `uye_no` and `sira_no`, `adet` (quantity loaned),
   `iade_adedi` (quantity returned so far, defaults 0), `veris_tarihi`, `teslim_tarihi` (set only once fully
   returned, i.e. `iade_adedi >= adet`). Loans support partial returns — `emanet_teslim_al` accepts an amount
   and adds to `iade_adedi` rather than closing the record outright.
-- "Available" (`musait`) quantity for a product is always computed, not stored: `stok_adedi - emanette`,
-  where `emanette` sums `adet - iade_adedi` across all open loan rows for that product (see
-  `_URUN_SECIM_SQL` / `urun_emanette_adedi`). Reducing a product's `stok_adedi` below what's currently on
-  loan is rejected in `urun_guncelle`.
+- "Available" (`musait`) quantity for a product is always computed, not stored:
+  `stok_adedi - emanette - pert_adedi`, where `emanette` sums `adet - iade_adedi` across all open loan rows
+  for that product (see `_URUN_SECIM_SQL` / `urun_emanette_adedi`). Because pert units are subtracted here,
+  `emanet_ver` rejects lending them without needing a separate rule. Reducing a product's `stok_adedi`
+  below `emanette + pert_adedi`, or setting `pert_adedi` above `stok_adedi`, is rejected in
+  `urun_guncelle`/`urun_ekle`.
 - Deleting a product or member is blocked while it has open (not fully returned) loans. Once safe to delete,
   the code first purges that entity's *closed* loan history rows before deleting the entity itself, since
   `emanet.uye_no`/`emanet.sira_no` are `NOT NULL REFERENCES` with no `ON DELETE` clause.

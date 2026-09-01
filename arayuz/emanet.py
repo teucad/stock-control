@@ -9,7 +9,7 @@ from arayuz.ortak import (
     Sayfa, tablo_olustur, form_satiri, entry_ayarla, hata, bilgi, turkce_klavye_duzelt,
 )
 from arayuz.uye import _AramaKarti, UYE_SUTUNLARI
-from arayuz.stok import STOK_SUTUNLARI
+from arayuz.stok import STOK_SUTUNLARI, urun_tabloya_doldur
 
 
 def _uye_tabloya_doldur(tv, uyeler):
@@ -17,15 +17,6 @@ def _uye_tabloya_doldur(tv, uyeler):
     for u in uyeler:
         tv.insert("", "end", iid=str(u["uye_no"]), values=(
             u["uye_no"], u["uye_adi"], u["tc"], u["telefon"] or "", u["adres"] or "",
-        ))
-
-
-def _urun_tabloya_doldur(tv, urunler):
-    tv.delete(*tv.get_children())
-    for u in urunler:
-        tv.insert("", "end", iid=str(u["sira_no"]), values=(
-            u["sira_no"], u["raf_no"], u["stok_adi"], u["stok_adedi"],
-            u["emanette"], u["musait"], db.tarih_goster(u["giris_tarihi"]),
         ))
 
 
@@ -119,7 +110,7 @@ class EmanetVer(Sayfa):
         _uye_tabloya_doldur(self.uye_tv, db.uye_ara(kriter, deger))
 
     def _urun_ara(self):
-        _urun_tabloya_doldur(self.urun_tv, db.urun_ara(self.e_urun_arama.get()))
+        urun_tabloya_doldur(self.urun_tv, db.urun_ara(self.e_urun_arama.get()))
 
     def _uye_secildi(self, event):
         secim = self.uye_tv.selection()

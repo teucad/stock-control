@@ -16,17 +16,20 @@ STOK_SUTUNLARI = [
     ("stok_adi", "Stok Adı", 200),
     ("toplam", "Toplam", 70),
     ("emanette", "Emanette", 80),
+    ("pert_adedi", "Pert", 60),
     ("musait", "Müsait", 70),
     ("giris_tarihi", "Giriş Tarihi", 140),
 ]
 
 
-def _tabloya_doldur(tv, urunler):
+def urun_tabloya_doldur(tv, urunler):
+    """STOK_SUTUNLARI ile kurulmuş bir tabloyu ürün listesiyle doldurur."""
     tv.delete(*tv.get_children())
     for u in urunler:
         tv.insert("", "end", iid=str(u["sira_no"]), values=(
             u["sira_no"], u["raf_no"], u["stok_adi"], u["stok_adedi"],
-            u["emanette"], u["musait"], db.tarih_goster(u["giris_tarihi"]),
+            u["emanette"], u["pert_adedi"], u["musait"],
+            db.tarih_goster(u["giris_tarihi"]),
         ))
 
 
@@ -40,6 +43,7 @@ class StokGiris(Sayfa):
         self.e_raf_no = form_satiri(form, 0, "Raf No:")
         self.e_stok_adi = form_satiri(form, 1, "Stok Adı:")
         self.e_stok_adedi = form_satiri(form, 2, "Stok Adedi:")
+        self.e_pert_adedi = form_satiri(form, 3, "Pert Adedi:")
 
         ttk.Button(self.icerik, text="Kaydet", command=self._kaydet).pack(
             anchor="w", pady=10
@@ -54,6 +58,8 @@ class StokGiris(Sayfa):
         self.e_raf_no.delete(0, tk.END)
         self.e_stok_adi.delete(0, tk.END)
         self.e_stok_adedi.delete(0, tk.END)
+        self.e_pert_adedi.delete(0, tk.END)
+        self.e_pert_adedi.insert(0, "0")
         self.e_raf_no.focus_set()
 
     def _kaydet(self):
@@ -63,6 +69,7 @@ class StokGiris(Sayfa):
                 self.e_stok_adi.get(),
                 self.e_stok_adedi.get(),
                 db.bugun(),
+                self.e_pert_adedi.get(),
             )
         except ValueError as e:
             hata(str(e))
@@ -94,9 +101,10 @@ class StokAraDuzelt(Sayfa):
         self.e_raf_no = form_satiri(duzelt, 0, "Raf No:")
         self.e_stok_adi = form_satiri(duzelt, 1, "Stok Adı:")
         self.e_stok_adedi = form_satiri(duzelt, 2, "Stok Adedi:")
+        self.e_pert_adedi = form_satiri(duzelt, 3, "Pert Adedi:")
 
         ttk.Button(duzelt, text="Güncelle", command=self._guncelle).grid(
-            row=3, column=1, sticky="w", pady=8
+            row=4, column=1, sticky="w", pady=8
         )
 
         self._secili_sira_no = None
@@ -106,7 +114,7 @@ class StokAraDuzelt(Sayfa):
 
     def _ara(self):
         urunler = db.urun_ara(self.e_arama.get())
-        _tabloya_doldur(self.tv, urunler)
+        urun_tabloya_doldur(self.tv, urunler)
         self._formu_temizle()
 
     def _secildi(self, event):
@@ -124,12 +132,15 @@ class StokAraDuzelt(Sayfa):
         self.e_stok_adi.insert(0, urun["stok_adi"])
         self.e_stok_adedi.delete(0, tk.END)
         self.e_stok_adedi.insert(0, str(urun["stok_adedi"]))
+        self.e_pert_adedi.delete(0, tk.END)
+        self.e_pert_adedi.insert(0, str(urun["pert_adedi"]))
 
     def _formu_temizle(self):
         self._secili_sira_no = None
         self.e_raf_no.delete(0, tk.END)
         self.e_stok_adi.delete(0, tk.END)
         self.e_stok_adedi.delete(0, tk.END)
+        self.e_pert_adedi.delete(0, tk.END)
 
     def _guncelle(self):
         if self._secili_sira_no is None:
@@ -141,6 +152,7 @@ class StokAraDuzelt(Sayfa):
                 self.e_raf_no.get(),
                 self.e_stok_adi.get(),
                 self.e_stok_adedi.get(),
+                self.e_pert_adedi.get(),
             )
         except ValueError as e:
             hata(str(e))
@@ -172,7 +184,7 @@ class StokSil(Sayfa):
 
     def _ara(self):
         urunler = db.urun_ara(self.e_arama.get())
-        _tabloya_doldur(self.tv, urunler)
+        urun_tabloya_doldur(self.tv, urunler)
 
     def _sil(self):
         secim = self.tv.selection()

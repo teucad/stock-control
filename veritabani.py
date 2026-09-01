@@ -53,6 +53,7 @@ def sema_kur():
                 raf_no       TEXT    NOT NULL,
                 stok_adi     TEXT    NOT NULL,
                 stok_adedi   INTEGER NOT NULL CHECK (stok_adedi >= 0),
+                pert_adedi   INTEGER NOT NULL DEFAULT 0 CHECK (pert_adedi >= 0),
                 giris_tarihi TEXT    NOT NULL
             )
         """)
@@ -76,6 +77,17 @@ def sema_kur():
                 teslim_tarihi TEXT
             )
         """)
+        # Daha önce oluşturulmuş veritabanlarında CREATE TABLE IF NOT EXISTS
+        # yeni sütunu eklemez; sonradan gelen sütunlar burada tamamlanır.
+        _sutun_ekle_yoksa(con, "urun", "pert_adedi",
+                          "INTEGER NOT NULL DEFAULT 0 CHECK (pert_adedi >= 0)")
+
+
+def _sutun_ekle_yoksa(con, tablo, sutun, tanim):
+    """Var olan veritabanlarına sonradan eklenen sütunları tamamlar."""
+    mevcut = [s["name"] for s in con.execute(f"PRAGMA table_info({tablo})")]
+    if sutun not in mevcut:
+        con.execute(f"ALTER TABLE {tablo} ADD COLUMN {sutun} {tanim}")
 
 
 # --------------------------------------------------------------------------
@@ -139,7 +151,8 @@ def _icerir(buyuk_metin, arama_metni):
 # --------------------------------------------------------------------------
 
 _URUN_SECIM_SQL = """
-    SELECT u.sira_no, u.raf_no, u.stok_adi, u.stok_adedi, u.giris_tarihi,
+    SELECT u.sira_no, u.raf_no, u.stok_adi, u.stok_adedi, u.pert_adedi,
+           u.giris_tarihi,
            COALESCE(SUM(CASE WHEN e.adet > e.iade_adedi
                               THEN e.adet - e.iade_adedi ELSE 0 END), 0) AS emanette
     FROM urun u
@@ -152,11 +165,13 @@ _URUN_SECIM_SQL = """
 
 def _urun_satiri_isle(satir):
     d = dict(satir)
-    d["musait"] = d["stok_adedi"] - d["emanette"]
+    # Pert (bozuk/arızalı) adetler stok adedinin içinde sayılır ama
+    # emanet verilemez; bu yüzden müsait adetten düşülür.
+    d["musait"] = d["stok_adedi"] - d["emanette"] - d["pert_adedi"]
     return d
 
 
-def urun_ekle(raf_no, stok_adi, stok_adedi, giris_tarihi):
+def urun_ekle(raf_no, stok_adi, stok_adedi, giris_tarihi, pert_adedi=0):
     raf_no = (raf_no or "").strip()
     stok_adi = (stok_adi or "").strip()
     if not raf_no:
@@ -166,15 +181,20 @@ def urun_ekle(raf_no, stok_adi, stok_adedi, giris_tarihi):
     adet = pozitif_sayi(stok_adedi)
     if adet is None:
         raise ValueError("Stok adedi geçerli bir sayı olmalı.")
+    pert = pozitif_sayi(pert_adedi)
+    if pert is None:
+        raise ValueError("Pert adedi geçerli bir sayı olmalı.")
+    if pert > adet:
+        raise ValueError("Pert adedi stok adedinden fazla olamaz.")
     if not giris_tarihi:
         raise ValueError("Stok giriş tarihi boş olamaz.")
     with baglanti() as con:
         if _stok_adi_cakisiyor(con, stok_adi):
             raise ValueError("Bu isimde bir stok zaten kayıtlı.")
         cur = con.execute(
-            "INSERT INTO urun (raf_no, stok_adi, stok_adedi, giris_tarihi) "
-            "VALUES (?, ?, ?, ?)",
-            (raf_no, stok_adi, adet, giris_tarihi),
+            "INSERT INTO urun (raf_no, stok_adi, stok_adedi, pert_adedi, giris_tarihi) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (raf_no, stok_adi, adet, pert, giris_tarihi),
         )
         return cur.lastrowid
 
@@ -221,7 +241,7 @@ def urun_emanette_adedi(sira_no, con=None):
         return c.execute(sql, (sira_no,)).fetchone()["toplam"]
 
 
-def urun_guncelle(sira_no, raf_no, stok_adi, stok_adedi):
+def urun_guncelle(sira_no, raf_no, stok_adi, stok_adedi, pert_adedi=0):
     raf_no = (raf_no or "").strip()
     stok_adi = (stok_adi or "").strip()
     if not raf_no:
@@ -231,6 +251,11 @@ def urun_guncelle(sira_no, raf_no, stok_adi, stok_adedi):
     adet = pozitif_sayi(stok_adedi)
     if adet is None:
         raise ValueError("Stok adedi geçerli bir sayı olmalı.")
+    pert = pozitif_sayi(pert_adedi)
+    if pert is None:
+        raise ValueError("Pert adedi geçerli bir sayı olmalı.")
+    if pert > adet:
+        raise ValueError("Pert adedi stok adedinden fazla olamaz.")
     with baglanti() as con:
         var_mi = con.execute("SELECT 1 FROM urun WHERE sira_no = ?", (sira_no,)).fetchone()
         if not var_mi:
@@ -238,14 +263,21 @@ def urun_guncelle(sira_no, raf_no, stok_adi, stok_adedi):
         if _stok_adi_cakisiyor(con, stok_adi, haric_sira_no=sira_no):
             raise ValueError("Bu isimde başka bir stok zaten kayıtlı.")
         emanette = urun_emanette_adedi(sira_no, con)
-        if adet < emanette:
+        # Emanetteki ve pert adetler stok adedinin içinde olmak zorunda.
+        if adet < emanette + pert:
+            if pert:
+                raise ValueError(
+                    f"Bu üründen {emanette} adet emanette, {pert} adet pert; "
+                    f"stok adedi {emanette + pert} adedin altına indirilemez."
+                )
             raise ValueError(
                 f"Bu üründen {emanette} adet emanette, stok adedi "
                 f"{emanette} adedin altına indirilemez."
             )
         con.execute(
-            "UPDATE urun SET raf_no = ?, stok_adi = ?, stok_adedi = ? WHERE sira_no = ?",
-            (raf_no, stok_adi, adet, sira_no),
+            "UPDATE urun SET raf_no = ?, stok_adi = ?, stok_adedi = ?, pert_adedi = ? "
+            "WHERE sira_no = ?",
+            (raf_no, stok_adi, adet, pert, sira_no),
         )
 
 
@@ -383,7 +415,14 @@ def emanet_ver(uye_no, sira_no, adet):
         if not uye:
             raise ValueError("Üye kaydı bulunamadı.")
         emanette = urun_emanette_adedi(sira_no, con)
-        musait = urun["stok_adedi"] - emanette
+        pert = urun["pert_adedi"]
+        # Pert (bozuk/arızalı) adetler emanet verilemez, müsaitten düşülür.
+        musait = urun["stok_adedi"] - emanette - pert
+        if musait <= 0 and pert > 0:
+            raise ValueError(
+                f"Bu üründen müsait adet yok ({pert} adet pert, "
+                f"{emanette} adet emanette)."
+            )
         if adet > musait:
             raise ValueError(
                 f"Müsait adetten fazla verilemez. Müsait: {musait}, istenen: {adet}."
