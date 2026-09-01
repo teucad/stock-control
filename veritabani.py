@@ -12,10 +12,19 @@ Türkçe mesaj olarak gösterir.
 
 import sqlite3
 import os
+import sys
 from contextlib import contextmanager
 from datetime import datetime
 
-DB_YOLU = os.path.join(os.path.dirname(os.path.abspath(__file__)), "stok.db")
+if getattr(sys, "frozen", False):
+    # PyInstaller ile paketlenmiş exe: __file__ her çalıştırmada silinen
+    # geçici bir _MEIPASS klasörünü gösterir; onun yerine exe'nin kendi
+    # bulunduğu klasörü kullanmalıyız ki veritabanı kalıcı olsun.
+    _TEMEL_DIZIN = os.path.dirname(os.path.abspath(sys.executable))
+else:
+    _TEMEL_DIZIN = os.path.dirname(os.path.abspath(__file__))
+
+DB_YOLU = os.path.join(_TEMEL_DIZIN, "stok.db")
 
 
 @contextmanager

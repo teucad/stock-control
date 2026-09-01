@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Stok Takip Sistemi - Uygulama girişi."""
 
+import os
+import sys
 import tkinter as tk
 from tkinter import ttk
 
@@ -9,6 +11,14 @@ from arayuz.ana_menu import AnaMenu
 from arayuz.stok import StokGiris, StokAraDuzelt, StokSil
 from arayuz.uye import UyeKayit, UyeAraDuzelt, UyeSil
 from arayuz.emanet import EmanetVer, EmanetAl
+
+
+def _kaynak_yolu(dosya_adi):
+    """Betik olarak çalışırken proje kökünü, PyInstaller ile paketlenmiş
+    exe olarak çalışırken pakete gömülü kaynakların bulunduğu geçici
+    _MEIPASS klasörünü kullanır."""
+    taban = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(taban, dosya_adi)
 
 
 class Uygulama(tk.Tk):
@@ -20,6 +30,10 @@ class Uygulama(tk.Tk):
         # sabitliyoruz.
         self.tk.call("encoding", "system", "utf-8")
         self.option_add("*Font", ("Segoe UI", 10))
+        try:
+            self.iconbitmap(_kaynak_yolu("stock-icon.ico"))
+        except tk.TclError:
+            pass
         self.title("Stok Takip Sistemi")
         self.geometry("950x680")
         self.minsize(800, 600)

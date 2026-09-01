@@ -26,14 +26,11 @@ Python kurulu değilse [python.org](https://www.python.org/downloads/) adresinde
 
 ## Kurulum
 
-Ek bir kurulum adımı yoktur; proje klasörünü edinmek yeterlidir.
+~~Ek bir kurulum adımı yoktur; proje klasörünü edinmek yeterlidir.~~
 
-```powershell
-git clone <depo-adresi>
-cd stock-status
-```
+~~(Depoyu zaten klonladıysanız veya dosyaları elle kopyaladıysanız bu adımı atlayabilirsiniz.)~~
 
-(Depoyu zaten klonladıysanız veya dosyaları elle kopyaladıysanız bu adımı atlayabilirsiniz.)
+```/dist``` klasöründe önceden build edilmiş, tek açılışta çalıştırılabilir ``StokTakipSistemi.exe`` dosyası mevcuttur. Dosyayı ilk açtığınızda dosyanın bulunduğu dizinde bir ``stok.db`` dosyası oluşacaktır. Bu dosya, stok veritabanını bulunduran dosyadır ve veritabanının silinmemesi veya bozulmaması için asla dokunulmamalıdır.
 
 ## Çalıştırma
 
